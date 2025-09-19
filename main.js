@@ -102,31 +102,44 @@ async function loadSponsors() {
         const data = await response.json();
         const container = document.getElementById('sponsorContainer');
 
-        // 그룹당 표시할 후원자 수
-        const sponsorsPerGroup = 60;
-
+        const sponsorsPerGroup = 99; // 그룹당 후원자 인원
         const allSponsors = data.sponsors || [];
         const groupCount = Math.ceil(allSponsors.length / sponsorsPerGroup);
 
+        const sliderImageCount = 3; // 슬라이드 이미지 개수
+        const sliderImages = Array.from({ length: sliderImageCount }, (_, i) => `images/sliderimage${i.toString().padStart(2, '0')}.jpg`);
+
         for (let groupIndex = 0; groupIndex < groupCount; groupIndex++) {
             const section = document.createElement('div');
-            section.className = 'sponsor-section '+ groupIndex;
+            section.className = 'sponsor-section ' + groupIndex;
 
-            const imageDiv = document.createElement('div');
-            imageDiv.className = 'sponsor-image';
-            const img = document.createElement('img');
-
-            // 마지막 그룹은 사진 넣지 않음
-            if (groupIndex + 1 < groupCount) {
-                img.src = `images/photo${groupIndex.toString().padStart(2, '0')}.jpg`;
-                img.alt = `사진 ${groupIndex}`;
-                img.className = 'cover-image';
-                imageDiv.appendChild(img);
-                section.appendChild(imageDiv);
-            }
-
-            // 첫 번째 그룹에만 검색 바 추가
             if (groupIndex === 0) {
+                const sliderContainer = document.createElement('div');
+                sliderContainer.className = 'slider-container';
+
+                const sliderWrapper = document.createElement('div');
+                sliderWrapper.className = 'slider-wrapper';
+
+                sliderImages.forEach(src => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.className = 'slide cover-image';
+                    sliderWrapper.appendChild(img);
+                });
+
+                const paginationDots = document.createElement('div');
+                paginationDots.className = 'pagination-dots';
+                sliderImages.forEach((_, index) => {
+                    const dot = document.createElement('span');
+                    dot.className = 'dot';
+                    dot.setAttribute('data-index', index);
+                    paginationDots.appendChild(dot);
+                });
+
+                sliderContainer.appendChild(sliderWrapper);
+                sliderContainer.appendChild(paginationDots);
+                section.appendChild(sliderContainer);
+
                 const searchContainer = document.createElement('div');
                 searchContainer.className = 'search-container';
                 searchContainer.innerHTML = `
@@ -134,11 +147,22 @@ async function loadSponsors() {
                     <button id="searchButton">검색</button>
                 `;
                 section.appendChild(searchContainer);
+
+                initializeSlider(sliderWrapper);
+
+            } else if (groupIndex + 1 < groupCount) {
+                const imageDiv = document.createElement('div');
+                imageDiv.className = 'sponsor-image';
+                const img = document.createElement('img');
+                img.src = `images/image${(groupIndex - 1).toString().padStart(2, '0')}.jpg`;
+                img.alt = `사진 ${groupIndex}`;
+                img.className = 'cover-image';
+                imageDiv.appendChild(img);
+                section.appendChild(imageDiv);
             }
 
             const table = document.createElement('table');
             table.className = 'sponsor-table';
-
             const startIndex = groupIndex * sponsorsPerGroup;
             const endIndex = startIndex + sponsorsPerGroup;
             const groupSponsors = allSponsors.slice(startIndex, endIndex);
@@ -167,9 +191,147 @@ async function loadSponsors() {
                 searchSponsor();
             }
         });
+
+        setupSlider();
+
     } catch (error) {
         console.error('Error loading sponsors:', error);
     }
+}
+
+// 슬라이드
+function initializeSlider(sliderWrapper) {
+    const slides = sliderWrapper.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    if (totalSlides <= 1) return;
+
+    sliderWrapper.style.width = `${totalSlides * 100}%`;
+    slides.forEach(slide => {
+        slide.style.width = `${100 / totalSlides}%`;
+    });
+    const slideUnit = 100 / totalSlides;
+
+    const dots = sliderWrapper.parentElement.querySelectorAll('.dot');
+    const sliderContainer = sliderWrapper.parentElement;
+
+    let startX = 0;
+    let currentTranslate = 0;
+    let prevTranslate = 0;
+    let isDragging = false;
+    let currentIndex = 0;
+    let animationID;
+    let autoSlideInterval;
+
+    function updateDots() {
+        dots.forEach((dot, index) => {
+            if (index === currentIndex) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
+    }
+
+    function startAutoSlide() {
+        if (autoSlideInterval) clearInterval(autoSlideInterval);
+        autoSlideInterval = setInterval(() => {
+            if (!isDragging) {
+                currentIndex = (currentIndex + 1) % totalSlides;
+                currentTranslate = -currentIndex * slideUnit; // 동적 계산
+                sliderWrapper.style.transform = `translateX(${currentTranslate}%)`;
+                updateDots();
+            }
+        }, 5000);
+    }
+
+    function setSliderPosition() {
+        sliderWrapper.style.transform = `translateX(${currentTranslate}%)`;
+    }
+
+    function animation() {
+        if (isDragging) {
+            setSliderPosition();
+            requestAnimationFrame(animation);
+        }
+    }
+
+    function touchStart(event) {
+        console.log(startX);
+        startX = event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+        isDragging = true;
+        sliderWrapper.style.transition = 'none';
+        if (autoSlideInterval) clearInterval(autoSlideInterval);
+
+        if (animationID) {
+            cancelAnimationFrame(animationID);
+        }
+        animationID = requestAnimationFrame(animation);
+    }
+
+    function touchMove(event) {
+        if (!isDragging) return;
+
+        const currentX = event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+        const diff = (currentX - startX) / sliderWrapper.offsetWidth * 100;
+        currentTranslate = prevTranslate + diff;
+
+        // 바운스 효과 제한
+        const maxTranslate = -(totalSlides - 1) * slideUnit; // 최대 이동 값 동적 계산
+        if (currentTranslate > 0) {
+            currentTranslate = 0;
+        } else if (currentTranslate < maxTranslate) {
+            currentTranslate = maxTranslate;
+        }
+    }
+
+    function touchEnd() {
+        isDragging = false;
+        const movedBy = currentTranslate - prevTranslate;
+
+        sliderWrapper.style.transition = 'transform 0.3s ease-out';
+
+        const slideOffset = (currentTranslate / slideUnit);
+
+        currentIndex = Math.round(-slideOffset);
+
+        if (currentIndex < 0) {
+            currentIndex = 0;
+        } else if (currentIndex >= totalSlides) {
+            currentIndex = totalSlides - 1;
+        }
+
+        currentTranslate = -currentIndex * slideUnit;
+
+        setSliderPosition();
+        updateDots();
+        prevTranslate = currentTranslate;
+        startAutoSlide();
+    }
+
+    sliderWrapper.addEventListener('touchstart', touchStart, {passive: true});
+    sliderWrapper.addEventListener('touchmove', touchMove, {passive: true});
+    sliderWrapper.addEventListener('touchend', touchEnd);
+    sliderWrapper.addEventListener('mousedown', touchStart);
+    sliderWrapper.addEventListener('mousemove', touchMove);
+    sliderWrapper.addEventListener('mouseup', touchEnd);
+    sliderWrapper.addEventListener('mouseleave', touchEnd);
+
+    // 페이지네이션 dots 클릭 이벤트
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            currentIndex = index;
+            currentTranslate = -currentIndex * slideUnit;
+            sliderWrapper.style.transition = 'transform 0.3s ease-out';
+            setSliderPosition();
+            updateDots();
+            prevTranslate = currentTranslate;
+            startAutoSlide();
+        });
+    });
+
+    // 초기 상태 설정
+    updateDots();
+    startAutoSlide();
 }
 
 function wrapNicknamesInSpan() {

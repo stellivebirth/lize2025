@@ -1,11 +1,18 @@
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-2ExtraLight.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
+
 body {
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
+    font-family: Paperozi;
 }
 
 .sponsor-section {
-    padding: 20px;
+    padding: 0 20px 0 20px;
     overflow: hidden;
 }
 
@@ -42,6 +49,53 @@ body {
     object-position: center;
 }
 
+.slider-container {
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    aspect-ratio: 16 / 9;
+    touch-action: pan-y;
+    user-select: none;
+}
+
+.slider-wrapper {
+    display: flex;
+    height: 100%;
+    transform: translateX(0);
+    will-change: transform;
+    transition: transform 0.5s ease-in-out;
+}
+
+.slide {
+    height: 100%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.pagination-dots {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.dot.active {
+    background-color: white;
+}
+
 .search-container {
     display: flex;
     padding: 10px;
@@ -51,6 +105,7 @@ body {
 #searchInput {
     flex-grow: 1;
     padding: 10px;
+    font-family: Paperozi;
     font-size: 16px;
     border: 1px solid #ddd;
     border-radius: 4px 0 0 4px;
@@ -65,8 +120,9 @@ body {
 
 #searchButton {
     padding: 10px 20px;
+    font-family: Paperozi;
     font-size: 16px;
-    background-color: #8692E3;
+    background-color: #FFB9D2;
     color: white;
     border: none;
     border-radius: 0 4px 4px 0;
@@ -98,7 +154,7 @@ td {
 }
 
 .highlight {
-    background-color: #8692E3;
+    background-color: #FFB9D2;
     color: white;
 }
 
@@ -135,7 +191,8 @@ td {
 
 #resultNavigation button {
     padding: 5px 10px;
-    background-color: #8692E3;
+    background-color: #FFB9D2;
+    font-family: Paperozi;
     color: white;
     border: none;
     border-radius: 3px;
@@ -153,7 +210,7 @@ td {
     border: none;
     outline: none;
     background-color: white;
-    color: #8692E3;
+    color: #FFB9D2;
     cursor: pointer;
     border-radius: 50%;
     font-size: 16px;
@@ -316,7 +373,6 @@ td {
 
 .slider-wrapper {
     display: flex;
-    width: 200%;
     height: 100%;
     transform: translateX(0);
     will-change: transform;
@@ -324,7 +380,7 @@ td {
 }
 
 .slide {
-    width: 50%;
+    width: calc(100% / var(--total-slides));
     height: 100%;
     object-fit: cover;
     flex-shrink: 0;
