@@ -1,7 +1,7 @@
 @font-face {
     font-family: 'Paperozi';
     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-2ExtraLight.woff2') format('woff2');
-    font-weight: 400;
+    font-weight: 500;
     font-display: swap;
 }
 
@@ -137,7 +137,7 @@ table {
 
 td {
     text-align: center;
-    padding: 8px;
+    padding: 12px;
     word-wrap: break-word;
     white-space: normal;
     overflow: visible;
