@@ -12,7 +12,7 @@ body {
 }
 
 .sponsor-section {
-    padding: 0 20px 0 20px;
+    padding: 20px 20px 0 20px;
     overflow: hidden;
 }
 
@@ -98,13 +98,13 @@ body {
 
 .search-container {
     display: flex;
-    padding: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 #searchInput {
     flex-grow: 1;
-    padding: 10px;
+    width: 100px;
+    padding-left: 10px;
     font-family: Paperozi;
     font-size: 16px;
     border: 1px solid #ddd;
@@ -137,7 +137,7 @@ table {
 
 td {
     text-align: center;
-    padding: 12px;
+    padding: 8px;
     word-wrap: break-word;
     white-space: normal;
     overflow: visible;
